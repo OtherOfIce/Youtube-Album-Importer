@@ -8,7 +8,9 @@ url = input("Please enter the URL of the album:")
 title, description = ProcessHTML.GetHTMLData(url)
 songList = ProcessSongs.GetSongList(description)
 print("The title is:", title)
-#DownloadAlbum.DownloadAlbum(url,title)
+if not os.path.exists("./" + title + ".mp3"):
+    print(title + ".mp3")
+    DownloadAlbum.DownloadAlbum(url,title)
 
 print("Importing the mp3 file...")
 sound = AudioSegment.from_mp3(title + ".mp3")
