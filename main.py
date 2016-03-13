@@ -4,6 +4,7 @@ import ProcessHTML
 import DownloadAlbum
 import os
 
+print("Make sure the video has a description with time codes in!")
 url = input("Please enter the URL of the album:")
 title, description = ProcessHTML.GetHTMLData(url)
 songList = ProcessSongs.GetSongList(description)
