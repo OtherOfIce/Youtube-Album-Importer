@@ -1,17 +1,18 @@
 from pydub import AudioSegment
 import ProcessSongs
-import ProcessHTML
-import DownloadAlbum
+import Youtube
 import os
 
 print("Make sure the video has a description with time codes in!")
 url = input("Please enter the URL of the album:")
-title, description = ProcessHTML.GetHTMLData(url)
+
+title = Youtube.DownloadTitle(url)
+description = Youtube.DownloadDescription(url)
 songList = ProcessSongs.GetSongList(description)
 print("The title is:", title)
 if not os.path.exists("./" + title + ".mp3"):
     print(title + ".mp3")
-    DownloadAlbum.DownloadAlbum(url,title)
+    Youtube.DownloadAlbum(url,title)
 
 print("Importing the mp3 file...")
 sound = AudioSegment.from_mp3(title + ".mp3")
