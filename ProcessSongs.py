@@ -28,6 +28,8 @@ def GetSongList(desciption):
     return songList
 
 def __lineContainsTimeCode(line):
-    if re.search("[0-9]:?[0-9][0-9]",line) != None:
+    if re.search("[0-9]:[0-9][0-9]",line) != None:
+        return True
+    if re.search("[0-9][0-9]:[0-9][0-9]",line) != None:
         return True
     return False
