@@ -2,12 +2,14 @@ import sys
 import urllib
 import urllib.request as urlopen
 from bs4 import BeautifulSoup
+import json
 
 retry_attempts = 10
 
 def GetSongList(title):
     id = __FindAlbumID(title)
-    tracks = __GetTracks(id)
+    tracks = __GetTracks(id, title)
+    __GetAlbumArtwork(id, title)
     return tracks
 
 def __FindAlbumID(title):
@@ -15,13 +17,19 @@ def __FindAlbumID(title):
     title = title.replace(" ","+")
 
     xml_data = urlopen.urlopen(base_url + title).read().decode("utf-8")
-
-
     parsed_xml = BeautifulSoup(xml_data, 'lxml')
     id = parsed_xml.find("release")['id']
     return id
 
-def __GetTracks(id):
+def __GetAlbumArtwork(id, title):
+    print(id)
+    base_url = "https://coverartarchive.org/release/"
+    data = urlopen.urlopen(base_url + id).read().decode("utf-8")
+    jsonData = json.loads(data)
+    image = urlopen.urlopen(jsonData["images"][0]["image"]).read()
+    open(title + "/artwork.jpg", 'wb').write(image)
+
+def __GetTracks(id, title):
     base_url = "https://musicbrainz.org/ws/2/release/"
     url_suffix = "?inc=recordings+artists"
     xml_data = urlopen.urlopen(base_url + id + url_suffix).read().decode("utf-8")
