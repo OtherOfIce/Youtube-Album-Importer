@@ -3,10 +3,16 @@ import ProcessSongs
 import MusicBrainz
 import Youtube
 import os
+import sys
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, APIC, error
 
-url = input("Please enter the URL of the album:")
+print(len(sys.argv))
+if len(sys.argv) != 1:
+    url = sys.argv[1]
+else:
+    url = input("Please enter the URL of the album:")
+
 
 title = Youtube.DownloadTitle(url)
 print("The title is:", title)
