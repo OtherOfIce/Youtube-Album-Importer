@@ -1,48 +1,30 @@
 import os
 import sys
-from pydub import AudioSegment
-import MusicBrainz
-import Youtube
-from Tagging import SetAlbumArtwork
-
+from Services import Youtube, MusicBrainz
+from MP3 import CutMP3
 
 if len(sys.argv) != 1:
     url = sys.argv[1]
 else:
     url = input("Please enter the URL of the album:")
 
-title = Youtube.DownloadTitle(url)
-print(title)
-
-if not os.path.exists("./" + title):
-    os.mkdir(title)
-
+videoTitle = Youtube.DownloadTitle(url)
 description = Youtube.DownloadDescription(url)
-songList = MusicBrainz.GetSongList(title)
+print(videoTitle)
+musicPath = "Music/" + videoTitle + "/"
 
-if not os.path.exists("./" + title + ".mp3"):
-    Youtube.DownloadAlbum(url,title)
+if not os.path.exists(musicPath):
+    os.mkdir(musicPath)
+
+
+albumID = MusicBrainz.FindAlbumID(videoTitle)
+trackList = MusicBrainz.GetTracks(albumID)
+MusicBrainz.GetAlbumArtwork(albumID, musicPath)
+
+if not os.path.exists(musicPath + videoTitle + ".mp3"):
+    Youtube.DownloadAlbum(url, musicPath + videoTitle)
 
 print("Importing the mp3 file...")
-sound = AudioSegment.from_mp3(title + ".mp3")
 
+CutMP3.CutMP3(musicPath,videoTitle,trackList)
 
-processedLength = 0
-
-for song_number in range(len(songList)):
-    songInfo = songList[song_number]
-    songTitle = songInfo["title"].replace("/"," ")
-    songLength = songInfo["length"]
-
-    print("Extracting and writing: " + songTitle)
-
-    song = sound[processedLength: processedLength + songLength]
-    processedLength += songLength
-
-    song.export(title + "/" + songTitle + ".mp3", format="mp3", tags={
-                    'title' : songInfo["title"],
-                    'artist': songInfo["artist"],
-                      'album': songInfo["artist"],
-                       'track' : songInfo["track number"]}
-        )
-    SetAlbumArtwork(title, songTitle)

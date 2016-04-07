@@ -21,10 +21,10 @@ def DownloadDescription(url):
         info_dict = ydl.extract_info(url, download=False)
         return info_dict.get('description', None)
 
-def DownloadAlbum(url,title):
+def DownloadAlbum(url,path):
     options ={
     'format': 'bestaudio/best',
-    'outtmpl' : title + ".%(ext)s",
+    'outtmpl' : path + ".%(ext)s",
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',

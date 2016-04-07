@@ -1,4 +1,3 @@
-import sys
 import urllib
 import urllib.request as urlopen
 import json
@@ -19,33 +18,25 @@ def __GetDataFromServer(url,retry=5,wait=3):
             time.sleep(wait)
     return data
 
-
-def GetSongList(title):
-    id = __FindAlbumID(title)
-    logger.debug("Album ID is:" + id)
-    tracks = __GetTracks(id)
-    __GetAlbumArtwork(id, title)
-    return tracks
-
-
-def __FindAlbumID(title):
+def FindAlbumID(title):
     base_url = "https://musicbrainz.org/ws/2/release/?query="
     title = title.replace(" ","+")
     xml_data = __GetDataFromServer(base_url + title)
     parsed_xml = BeautifulSoup(xml_data, 'html.parser')
     id = parsed_xml.find("release")['id']
+    logger.debug(id)
     return id
 
 
-def __GetAlbumArtwork(id, title):
+def GetAlbumArtwork(id, path):
     base_url = "https://coverartarchive.org/release/"
     data = __GetDataFromServer(base_url + id)
     jsonData = json.loads(data)
     image = urlopen.urlopen(jsonData["images"][0]["image"]).read()
-    open(title + "/artwork.jpg", 'wb').write(image)
+    open(path + "artwork.jpg", 'wb').write(image)
 
 
-def __GetTracks(id):
+def GetTracks(id):
     base_url = "https://musicbrainz.org/ws/2/release/"
     url_suffix = "?inc=recordings+artists"
     xml_data = __GetDataFromServer(base_url + id + url_suffix)
