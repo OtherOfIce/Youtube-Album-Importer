@@ -1,12 +1,23 @@
 import youtube_dl
 
+class youtubeLogger(object):
+    def debug(self, msg):
+        pass
+    def warning(self, msg):
+        pass
+    def error(self, msg):
+        print(msg)
+
+
+noLogOptions = {'logger':youtubeLogger()}
+
 def DownloadTitle(url):
-    with youtube_dl.YoutubeDL() as ydl:
+    with youtube_dl.YoutubeDL(noLogOptions) as ydl:
         info_dict = ydl.extract_info(url, download=False)
         return info_dict.get('title', None)
 
 def DownloadDescription(url):
-    with youtube_dl.YoutubeDL() as ydl:
+    with youtube_dl.YoutubeDL(noLogOptions) as ydl:
         info_dict = ydl.extract_info(url, download=False)
         return info_dict.get('description', None)
 

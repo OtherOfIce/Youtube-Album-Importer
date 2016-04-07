@@ -12,7 +12,7 @@ else:
     url = input("Please enter the URL of the album:")
 
 title = Youtube.DownloadTitle(url)
-print("The title is:", title)
+print(title)
 
 if not os.path.exists("./" + title):
     os.mkdir(title)
@@ -21,7 +21,6 @@ description = Youtube.DownloadDescription(url)
 songList = MusicBrainz.GetSongList(title)
 
 if not os.path.exists("./" + title + ".mp3"):
-    print(title + ".mp3")
     Youtube.DownloadAlbum(url,title)
 
 print("Importing the mp3 file...")
@@ -35,7 +34,7 @@ for song_number in range(len(songList)):
     songTitle = songInfo["title"].replace("/"," ")
     songLength = songInfo["length"]
 
-    print("Extracting and writing: " + songTitle.encode('ascii'))
+    print("Extracting and writing: " + songTitle)
 
     song = sound[processedLength: processedLength + songLength]
     processedLength += songLength

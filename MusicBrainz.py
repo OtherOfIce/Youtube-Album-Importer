@@ -1,11 +1,13 @@
 import sys
 import urllib
 import urllib.request as urlopen
-from bs4 import BeautifulSoup
 import json
 import time
+import logging
+from bs4 import BeautifulSoup
 
-retry_attempts = 10
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def __GetDataFromServer(url,retry=5,wait=3):
     for attempt in range(retry):
@@ -13,16 +15,18 @@ def __GetDataFromServer(url,retry=5,wait=3):
             data = urlopen.urlopen(url).read().decode("utf-8")
             break
         except urllib.error.HTTPError:
-            print("Failed to contact server: retrying attempt " + attempt)
+            logging.debug("Failed to contact server: retrying attempt " + str(attempt))
             time.sleep(wait)
     return data
 
 
 def GetSongList(title):
     id = __FindAlbumID(title)
-    tracks = __GetTracks(id, title)
+    logger.debug("Album ID is:" + id)
+    tracks = __GetTracks(id)
     __GetAlbumArtwork(id, title)
     return tracks
+
 
 def __FindAlbumID(title):
     base_url = "https://musicbrainz.org/ws/2/release/?query="
@@ -32,32 +36,30 @@ def __FindAlbumID(title):
     id = parsed_xml.find("release")['id']
     return id
 
+
 def __GetAlbumArtwork(id, title):
-    print(id)
     base_url = "https://coverartarchive.org/release/"
     data = __GetDataFromServer(base_url + id)
     jsonData = json.loads(data)
     image = urlopen.urlopen(jsonData["images"][0]["image"]).read()
     open(title + "/artwork.jpg", 'wb').write(image)
 
-def __GetTracks(id, title):
+
+def __GetTracks(id):
     base_url = "https://musicbrainz.org/ws/2/release/"
     url_suffix = "?inc=recordings+artists"
     xml_data = __GetDataFromServer(base_url + id + url_suffix)
     parsed_xml = BeautifulSoup(xml_data, 'html.parser')
     xml_tracks = parsed_xml.findAll("track")
-    print(parsed_xml.find("track-list").count)
+    logger.debug("Number of tracks: ", parsed_xml.find("track-list").count)
     tracks = [{} for x in range(int(parsed_xml.find("track-list")["count"]))]
     xml_track_count = 0
     for xml_track in xml_tracks:
-        print(xml_track_count)
         tracks[xml_track_count] = {}
         tracks[xml_track_count]["title"] = xml_track.recording.title.string
         tracks[xml_track_count]["length"] = int(xml_track.recording.length.string)
         tracks[xml_track_count]["artist"] = parsed_xml.find("artist").contents[0].string
         tracks[xml_track_count]["album"] = parsed_xml.metadata.release.title.string
         tracks[xml_track_count]["track number"] = xml_track.number.string
-        xml_track_count += 1;
+        xml_track_count += 1
     return tracks
-#print(GetSongList("Foo Fighters - Echoes, Silence, Patience & Grace"))
-#GetSongList("a0aa34aa-4fe2-4de4-a1c6-0587d5422b33?inc=recordings")
