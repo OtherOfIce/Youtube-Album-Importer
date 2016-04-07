@@ -17,7 +17,7 @@ def __FindAlbumID(title):
     title = title.replace(" ","+")
 
     xml_data = urlopen.urlopen(base_url + title).read().decode("utf-8")
-    parsed_xml = BeautifulSoup(xml_data, 'lxml')
+    parsed_xml = BeautifulSoup(xml_data, 'html.parser')
     id = parsed_xml.find("release")['id']
     return id
 
@@ -33,7 +33,7 @@ def __GetTracks(id, title):
     base_url = "https://musicbrainz.org/ws/2/release/"
     url_suffix = "?inc=recordings+artists"
     xml_data = urlopen.urlopen(base_url + id + url_suffix).read().decode("utf-8")
-    parsed_xml = BeautifulSoup(xml_data, 'lxml')
+    parsed_xml = BeautifulSoup(xml_data, 'html.parser')
     xml_tracks = parsed_xml.findAll("track")
     print(parsed_xml.find("track-list").count)
     tracks = [{} for x in range(int(parsed_xml.find("track-list")["count"]))]
