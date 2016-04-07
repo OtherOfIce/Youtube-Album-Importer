@@ -3,8 +3,20 @@ import urllib
 import urllib.request as urlopen
 from bs4 import BeautifulSoup
 import json
+import time
 
 retry_attempts = 10
+
+def __GetDataFromServer(url,retry=5,wait=3):
+    for attempt in range(retry):
+        try:
+            data = urlopen.urlopen(url).read().decode("utf-8")
+            break
+        except urllib.error.HTTPError:
+            print("Failed to contact server: retrying attempt " + attempt)
+            time.sleep(wait)
+    return data
+
 
 def GetSongList(title):
     id = __FindAlbumID(title)
@@ -15,8 +27,7 @@ def GetSongList(title):
 def __FindAlbumID(title):
     base_url = "https://musicbrainz.org/ws/2/release/?query="
     title = title.replace(" ","+")
-
-    xml_data = urlopen.urlopen(base_url + title).read().decode("utf-8")
+    xml_data = __GetDataFromServer(base_url + title)
     parsed_xml = BeautifulSoup(xml_data, 'html.parser')
     id = parsed_xml.find("release")['id']
     return id
@@ -24,7 +35,7 @@ def __FindAlbumID(title):
 def __GetAlbumArtwork(id, title):
     print(id)
     base_url = "https://coverartarchive.org/release/"
-    data = urlopen.urlopen(base_url + id).read().decode("utf-8")
+    data = __GetDataFromServer(base_url + id)
     jsonData = json.loads(data)
     image = urlopen.urlopen(jsonData["images"][0]["image"]).read()
     open(title + "/artwork.jpg", 'wb').write(image)
@@ -32,7 +43,7 @@ def __GetAlbumArtwork(id, title):
 def __GetTracks(id, title):
     base_url = "https://musicbrainz.org/ws/2/release/"
     url_suffix = "?inc=recordings+artists"
-    xml_data = urlopen.urlopen(base_url + id + url_suffix).read().decode("utf-8")
+    xml_data = __GetDataFromServer(base_url + id + url_suffix)
     parsed_xml = BeautifulSoup(xml_data, 'html.parser')
     xml_tracks = parsed_xml.findAll("track")
     print(parsed_xml.find("track-list").count)
