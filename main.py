@@ -41,7 +41,7 @@ for song_number in range(len(songList)):
                     'title' : songInfo["title"],
                     'artist': songInfo["artist"],
                       'album': songInfo["artist"],
-                       'track number' : songInfo["track number"]}
+                       'track' : songInfo["track number"]}
         )
     audio = MP3(title + "/" + songTitle + ".mp3", ID3=ID3)
     # add ID3 tag if it doesn't exist
