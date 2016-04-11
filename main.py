@@ -9,17 +9,18 @@ else:
     url = input("Please enter the URL of the album:")
 
 videoTitle = Youtube.DownloadTitle(url)
-description = Youtube.DownloadDescription(url)
+videoDescription = Youtube.DownloadDescription(url)
+videoLength = Youtube.DownloadLength(url)
 print(videoTitle)
+
 musicPath = "Music/" + videoTitle + "/"
 
 if not os.path.exists(musicPath):
     os.mkdir(musicPath)
+difference = MusicBrainz.GetBestTrackList(videoTitle, videoLength)
 
-
-albumID = MusicBrainz.FindAlbumID(videoTitle)
-trackList = MusicBrainz.GetTracks(albumID)
-MusicBrainz.GetAlbumArtwork(albumID, musicPath)
+trackList = MusicBrainz.GetTracks(difference["id"])
+MusicBrainz.GetAlbumArtwork(difference["id"], musicPath)
 
 if not os.path.exists(musicPath + videoTitle + ".mp3"):
     Youtube.DownloadAlbum(url, musicPath + videoTitle)
@@ -28,3 +29,6 @@ print("Importing the mp3 file...")
 
 CutMP3.CutMP3(musicPath,videoTitle,trackList)
 
+
+print(difference["id"])
+print(difference["difference"])

@@ -21,6 +21,11 @@ def DownloadDescription(url):
         info_dict = ydl.extract_info(url, download=False)
         return info_dict.get('description', None)
 
+def DownloadLength(url):
+    with youtube_dl.YoutubeDL(noLogOptions) as ydl:
+        info_dict = ydl.extract_info(url, download=False)
+        return info_dict.get('duration',None)
+
 def DownloadAlbum(url,path):
     options ={
     'format': 'bestaudio/best',
@@ -33,3 +38,4 @@ def DownloadAlbum(url,path):
     }
     with youtube_dl.YoutubeDL(options) as ydl:
         ydl.download([url])
+
