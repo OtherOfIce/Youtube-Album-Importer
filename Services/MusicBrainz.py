@@ -34,7 +34,7 @@ def GetBestTrackList(title,videoLength):
             difference["id"] = albumID
             difference["difference"] = abs(albumLength - videoLength)
 
-    if difference["difference"] < 5000:
+    if difference["difference"] > 5000:
         print("Difference is greater than 5 seconds warning")
         exit()
     return difference

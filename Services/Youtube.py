@@ -1,41 +1,42 @@
 import youtube_dl
 
-class youtubeLogger(object):
+
+class YoutubeLogger(object):
     def debug(self, msg):
         pass
+
     def warning(self, msg):
         pass
+
     def error(self, msg):
         print(msg)
 
 
-noLogOptions = {'logger':youtubeLogger()}
+class Youtube(object):
+    def __init__(self, url):
+        self.url = url
+        self.noLogOptions = {'logger':YoutubeLogger()}
+        self.video_info = youtube_dl.YoutubeDL(self.noLogOptions).extract_info(url, download=False)
 
-def DownloadTitle(url):
-    with youtube_dl.YoutubeDL(noLogOptions) as ydl:
-        info_dict = ydl.extract_info(url, download=False)
-        return info_dict.get('title', None)
+    def get_title(self):
+            return self.video_info.get('title', None)
 
-def DownloadDescription(url):
-    with youtube_dl.YoutubeDL(noLogOptions) as ydl:
-        info_dict = ydl.extract_info(url, download=False)
-        return info_dict.get('description', None)
+    def get_description(self):
+            return self.video_info.get('description', None)
 
-def DownloadLength(url):
-    with youtube_dl.YoutubeDL(noLogOptions) as ydl:
-        info_dict = ydl.extract_info(url, download=False)
-        return info_dict.get('duration',None)
+    def get_length(self):
+            return self.video_info.get('duration',None)
 
-def DownloadAlbum(url,path):
-    options ={
-    'format': 'bestaudio/best',
-    'outtmpl' : path + ".%(ext)s",
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
-            'preferredquality': '192',
-        }],
-    }
-    with youtube_dl.YoutubeDL(options) as ydl:
-        ydl.download([url])
+    def download_video(self, path):
+        options ={
+        'format': 'bestaudio/best',
+        'outtmpl' : path + ".%(ext)s",
+            'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+                'preferredquality': '320',
+            }],
+        }
+        with youtube_dl.YoutubeDL(options) as ydl:
+            ydl.download([self.url])
 

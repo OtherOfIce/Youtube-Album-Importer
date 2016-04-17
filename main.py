@@ -8,9 +8,10 @@ if len(sys.argv) != 1:
 else:
     url = input("Please enter the URL of the album:")
 
-videoTitle = Youtube.DownloadTitle(url)
-videoDescription = Youtube.DownloadDescription(url)
-videoLength = Youtube.DownloadLength(url)
+youtube = Youtube.Youtube(url)
+videoTitle = youtube.get_title()
+videoDescription = youtube.get_description()
+videoLength = youtube.get_length()
 print(videoTitle)
 
 musicPath = "Music/" + videoTitle + "/"
@@ -23,7 +24,7 @@ trackList = MusicBrainz.GetTracks(difference["id"])
 MusicBrainz.GetAlbumArtwork(difference["id"], musicPath)
 
 if not os.path.exists(musicPath + videoTitle + ".mp3"):
-    Youtube.DownloadAlbum(url, musicPath + videoTitle)
+    youtube.download_video(musicPath + videoTitle)
 
 print("Importing the mp3 file...")
 
