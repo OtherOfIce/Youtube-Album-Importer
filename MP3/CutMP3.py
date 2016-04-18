@@ -1,5 +1,8 @@
 from pydub import AudioSegment
-from Tagging import SetAlbumArtwork
+
+from MP3.Tagging import set_album_artwork
+
+
 def CutMP3(path,videoTitle,trackList):
     sound = AudioSegment.from_mp3(path+"/" + videoTitle + ".mp3")
     processedLength = 0
@@ -19,4 +22,4 @@ def CutMP3(path,videoTitle,trackList):
                           'album': songInfo["artist"],
                            'track' : songInfo["track number"]}
                     )
-        SetAlbumArtwork(path, songTitle)
+        set_album_artwork(path, songTitle)
