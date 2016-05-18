@@ -1,7 +1,11 @@
-import os
-import sys
+import os, sys
+import logging
 from Services import Youtube, MusicBrainz
 from MP3 import CutMP3
+
+
+logging.basicConfig(level=logging.NOTSET)
+logger = logging.getLogger(__name__)
 
 if len(sys.argv) != 1:
     url = sys.argv[1]

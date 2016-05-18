@@ -5,8 +5,7 @@ import time
 import logging
 from bs4 import BeautifulSoup
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+
 
 
 def __GetDataFromServer(url,retry=5,wait=3):
