@@ -6,8 +6,6 @@ import logging
 from bs4 import BeautifulSoup
 
 
-
-
 def __GetDataFromServer(url,retry=5,wait=3):
     for attempt in range(retry):
         try:
@@ -26,7 +24,9 @@ def GetBestTrackList(title,videoLength):
         print("Finding Tracks")
         albumTracks = GetTracks(albumID)
         albumLength = GetAlbumLength(albumTracks)
-
+        if albumLength == 0:
+            logging.debug("No length for album.")
+            break;
         print("Current ID: ", albumID)
         print("Difference: ", abs(albumLength - videoLength))
         if abs(albumLength - videoLength) < difference["difference"]:
@@ -34,7 +34,7 @@ def GetBestTrackList(title,videoLength):
             difference["difference"] = abs(albumLength - videoLength)
 
     if difference["difference"] > 5000:
-        print("Difference is greater than 5 seconds warning")
+        print("Difference is greater than 5 seconds Music will be out of sync. Quitting")
         exit()
     return difference
 
@@ -43,7 +43,11 @@ def GetAlbumArtwork(id, path):
     base_url = "https://coverartarchive.org/release/"
     data = __GetDataFromServer(base_url + id)
     jsonData = json.loads(data)
-    image = urlopen.urlopen(jsonData["images"][0]["image"]).read()
+    try:
+        image = urlopen.urlopen(jsonData["images"][0]["image"]).read()
+    except:
+        print("Failed to get artwork. Sorry")
+
     open(path + "artwork.jpg", 'wb').write(image)
 
 
@@ -51,43 +55,41 @@ def GetTracks(id):
     base_url = "https://musicbrainz.org/ws/2/release/"
     url_suffix = "?inc=recordings+artists"
     url = base_url + id + url_suffix
-    logger.info(url)
+    logging.info(url)
     xml_data = __GetDataFromServer(url)
     parsed_xml = BeautifulSoup(xml_data, 'html.parser')
     xml_tracks = parsed_xml.findAll("track")
     tracks = [{} for x in range(50)]
     xml_track_count = 0
     for xml_track in xml_tracks:
-        tracks[xml_track_count] = {}
-        tracks[xml_track_count]["title"] = xml_track.recording.title.string
-        tracks[xml_track_count]["length"] = int(xml_track.recording.length.string)
-        tracks[xml_track_count]["artist"] = parsed_xml.find("artist").contents[0].string
-        tracks[xml_track_count]["album"] = parsed_xml.metadata.release.title.string
-        tracks[xml_track_count]["track number"] = xml_track.number.string
-        xml_track_count += 1
+            tracks[xml_track_count] = {}
+            tracks[xml_track_count]["title"] = xml_track.recording.title.string
+            tracks[xml_track_count]["length"] = int(xml_track.recording.length.string)
+            tracks[xml_track_count]["artist"] = parsed_xml.find("artist").contents[0].string
+            tracks[xml_track_count]["album"] = parsed_xml.metadata.release.title.string
+            tracks[xml_track_count]["track number"] = xml_track.number.string
+            xml_track_count += 1
     return tracks
 
 def GetAlbumLength(tracks):
-    albumLength = 0
+    album_length = 0
     for track in tracks:
         try:
             trackLength = track["length"]
         except KeyError:
             return 0
-        albumLength += trackLength
-    return albumLength / 1000
+        album_length += trackLength
+    return album_length / 1000
 
 
 def FindAlbumIDs(title):
     base_url = "https://musicbrainz.org/ws/2/release/?query="
-    title = title.replace(" ","+")
+    title = urllib.parse.quote_plus(title)
     url = base_url + title
-    logger.info(url)
+    logging.info(url)
     xml_data = __GetDataFromServer(url)
     parsed_xml = BeautifulSoup(xml_data, 'html.parser')
-    releaseList = parsed_xml.findAll("release")
-    ids = []
-    for release in releaseList:
-        if int(release["ext:score"]) > 85:
-            ids.append(str(release["id"]))
+    release_list = parsed_xml.findAll("release")
+    ids = list(filter(lambda x: int(x["ext:score"]) > 85, release_list))
+    ids = list(map(lambda x:x["id"],ids))
     return ids
