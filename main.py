@@ -11,10 +11,15 @@ if len(sys.argv) != 1:
 else:
     url = input("Please enter the URL of the album:")
 
-youtube = Youtube.Youtube(url)
-videoTitle = youtube.get_title()
-videoDescription = youtube.get_description()
-videoLength = youtube.get_length()
+try:
+    youtube = Youtube.Youtube(url)
+    videoTitle = youtube.get_title()
+    videoDescription = youtube.get_description()
+    videoLength = youtube.get_length()
+except Youtube.youtube_dl.utils.DownloadError:
+    print("Given URL is invalid")
+    sys.exit()
+
 print(videoTitle)
 
 musicPath = "Music/" + videoTitle + "/"

@@ -1,34 +1,45 @@
-import urllib
-import urllib.request as urlopen
-import json
-import time
 import logging
+import urllib
 from bs4 import BeautifulSoup
+from Utility.Utility import getDataFromServer
 
 
-def __GetDataFromServer(url,retry=5,wait=3):
-    for attempt in range(retry):
-        try:
-            data = urlopen.urlopen(url).read().decode("utf-8")
-            break
-        except urllib.error.HTTPError:
-            logging.debug("Failed to contact server: retrying attempt " + str(attempt))
-            time.sleep(wait)
-    return data
+class musicBrainz(object):
+    def __init__(self):
+        pass
+    def downloadTrackMetaData(self, title):
+            base_url = "https://musicbrainz.org/ws/2/release/?query="
+            url_suffix = "?inc=recordings+artists"
+            title = urllib.parse.quote_plus(title)
+            url = base_url + title + url_suffix
+            logging.info(url)
+            xml_data = getDataFromServer(url)
+            parsed_xml = BeautifulSoup(xml_data, 'html.parser')
+            track = []
+            track["title"] = parsed_xml.recording.title.string
+            track["length"] = int(parsed_xml.recording.length.string)
+            #track["artist"] = parsed_xml.recording
+             #   tracks[xml_track_count]["album"] = parsed_xml.metadata.release.title.string
+             #   tracks[xml_track_count]["track number"] = xml_track.number.string
+             #   xml_track_count += 1
+            return track
+    def downloadAlbumMetaData(self,title):
+        pass
+
+
 
 def GetBestTrackList(title,videoLength):
     albumIDs = FindAlbumIDs(title)
     difference = {'id': 0, 'difference': 1000000000}
     for albumID in albumIDs:
-        print(albumID)
-        print("Finding Tracks")
+        logging.debug(albumID)
         albumTracks = GetTracks(albumID)
         albumLength = GetAlbumLength(albumTracks)
         if albumLength == 0:
             logging.debug("No length for album.")
             break;
-        print("Current ID: ", albumID)
-        print("Difference: ", abs(albumLength - videoLength))
+        logging.debug("Current ID: ", albumID)
+        logging.debug("Difference: ", abs(albumLength - videoLength))
         if abs(albumLength - videoLength) < difference["difference"]:
             difference["id"] = albumID
             difference["difference"] = abs(albumLength - videoLength)
@@ -39,24 +50,12 @@ def GetBestTrackList(title,videoLength):
     return difference
 
 
-def GetAlbumArtwork(id, path):
-    base_url = "https://coverartarchive.org/release/"
-    data = __GetDataFromServer(base_url + id)
-    jsonData = json.loads(data)
-    try:
-        image = urlopen.urlopen(jsonData["images"][0]["image"]).read()
-    except:
-        print("Failed to get artwork. Sorry")
-
-    open(path + "artwork.jpg", 'wb').write(image)
-
-
 def GetTracks(id):
     base_url = "https://musicbrainz.org/ws/2/release/"
     url_suffix = "?inc=recordings+artists"
     url = base_url + id + url_suffix
     logging.info(url)
-    xml_data = __GetDataFromServer(url)
+    xml_data = getDataFromServer(url)
     parsed_xml = BeautifulSoup(xml_data, 'html.parser')
     xml_tracks = parsed_xml.findAll("track")
     tracks = [{} for x in range(50)]
@@ -87,7 +86,7 @@ def FindAlbumIDs(title):
     title = urllib.parse.quote_plus(title)
     url = base_url + title
     logging.info(url)
-    xml_data = __GetDataFromServer(url)
+    xml_data = getDataFromServer(url)
     parsed_xml = BeautifulSoup(xml_data, 'html.parser')
     release_list = parsed_xml.findAll("release")
     ids = list(filter(lambda x: int(x["ext:score"]) > 85, release_list))
